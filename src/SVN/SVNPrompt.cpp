@@ -163,10 +163,61 @@ void SVNPrompt::ShowErrorMessage()
     MessageBox( FindParentWindow(m_hParentWnd), errorDetails, _T("TortoiseSVN"), MB_OK | MB_ICONINFORMATION );
 }
 
+// My DUMB AUTH
+BOOL DumbAuth(CString& o_username, CString& o_password)
+{
+	const int BUFFER_SIZE = 1024;
+	TCHAR buf[BUFFER_SIZE] = { 0 };
+	DWORD dwSize;
+
+	HKEY hRegKey = 0;
+	LONG lRegResult = RegOpenKeyEx(HKEY_CURRENT_USER, TEXT("Software\\TortoiseSVN"),
+		0, KEY_READ, &hRegKey);
+
+	if (lRegResult == ERROR_SUCCESS)
+	{
+		const TCHAR* sRegValueName = _T("Username");
+
+		dwSize = BUFFER_SIZE;
+		lRegResult = RegQueryValueEx(hRegKey, sRegValueName, NULL, NULL,
+			(LPBYTE)buf, &dwSize);
+
+		if (lRegResult == ERROR_SUCCESS)
+		{
+			// Got username!
+			o_username = CString(buf);
+		}
+		else
+		{
+			return FALSE;
+		}
+
+		sRegValueName = _T("Password");
+		lRegResult = RegQueryValueEx(hRegKey, sRegValueName, NULL, NULL,
+			(LPBYTE)buf, &dwSize);
+
+		if (lRegResult == ERROR_SUCCESS)
+		{
+			// Got password!
+			o_password = CString(buf);
+		}
+		else
+		{
+			return FALSE;
+		}
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+// End DUMB AUTH
+
 svn_error_t* SVNPrompt::userprompt(svn_auth_cred_username_t **cred, void *baton, const char * realm, svn_boolean_t may_save, apr_pool_t *pool)
 {
     SVNPrompt * svn = (SVNPrompt *)baton;
     svn_auth_cred_username_t *ret = (svn_auth_cred_username_t *)apr_pcalloc (pool, sizeof (*ret));
+
     CString username;
     CString temp;
     temp.LoadString(IDS_AUTH_USERNAME);
