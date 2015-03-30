@@ -221,6 +221,9 @@ svn_error_t* SVNPrompt::userprompt(svn_auth_cred_username_t **cred, void *baton,
     CString username;
     CString temp;
     temp.LoadString(IDS_AUTH_USERNAME);
+
+	//TODO: Use DUMB AUTH here before prompting the user
+
     if (!svn->m_bSuppressed && svn->Prompt(username, FALSE, temp, may_save))
     {
         ret->username = apr_pstrdup(pool, CUnicodeUtils::GetUTF8(username));
